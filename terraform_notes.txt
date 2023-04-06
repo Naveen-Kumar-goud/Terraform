@@ -1,0 +1,1207 @@
+Terraform written in HCL(Hashicorp Configuration Language).
+
+These files will be saved with the extension of .tf
+
+
+main.tf ===> To define the resources.
+variables.tf ===> To declare the variables.
+output.tf ===> To save the output.
+provider.tf ===> to define providers
+
+providers: -
+
+Ex:- AWS GCP AZURE
+
+https://registry.terraform.io/browse/providers
+
+1. official provider ex: AWS GCP AZURE
+2. partner provider  
+3. community provider
+
+terraform init 
+creates .terraform file with provider plugin.
+
+1. downloaded the plugin from https://registry.terraform.io/browse/providers
+2. lock file will be downloaded (The lock file contains the information which was downloaded when initialized)  
+
+provider:  /registry.terraform.io/hashicorp/local
+
+
+terraform plan 
+it will create the execution plan required to create resources.
+
+terraform apply
+it will perform the changes mentioned in the execution plan from terraform plan and create a state file.
+
+statefile(tfstate):- current state of infrastructure.
+
+
+terraform show
+it will show the current state of the infrastructure.
+
+terraform plan -out shraddha
+the execution plan will be saved in shraddha
+
+terraform apply shradda
+apply the changes from shraddha
+
+tfstate backup file: it contains the old version of the state file
+
+terraform destroy
+destroys the performed changes
+
+
+
+====================================================
+
+WORKFLOW:- steps to follow for creating resources.
+
+1. terraform init
+2. terraform plan
+3. terraform apply
+4. terraform destroy
+
+
+==========================================================================================================================
+
+Terraform Variables:
+
+number  : Numbers it will consider.
+string  : Combination of numbers or characters or special characters.
+bool : true or false
+any     : By default terraform consider all variables as any if we don't declare the type in variables.tf .
+
+list   : Collection of similar data type we can access data using index [1,2,3,6,7] (access===>var.length[1], defined ===> list ,  initialize ===> ["4", "2"])
+Variable constrents :
+list(number)
+list(string)
+
+set    : It is similar to list but it will not accept dublicates  we can access data using index [1,2,3,6,7] (access===>var.length[1], defined ===>set ,  initialize ===> ["4", "2"]). 
+Variable constrents :
+set(number)
+set(string)
+
+map
+Variable constrents : It will be defined in key value pair and it can accessed using key.(access===>var.length["second"], defined ===> map(number) ,  initialize ===>
+ length = 
+{
+	"first" = "1"
+	"second" = "2"
+}.  
+map(number)
+map(string)
+
+object : collection of multiple data types. It is accessed using key similar to map.
+define
+variable "naveen" {
+	type = object({
+		colour = string
+		height = number
+		food = list(string)
+		type = bool
+	})
+}
+
+Initialise:
+naveen = {
+	colour = "brown"
+	height = "6"
+	food = ["chicken", "fish"]
+	type = true
+}
+
+access
+naveen["colour"]
+
+
+tuples : collection of multiple data types. it is accessed using index similar to list.
+
+define:
+variable "name" {
+	type = tuple([string, number])
+}
+
+Initialise:
+name = ["naveen", "5"]
+
+access:
+var.name[0]
+
+========================================================================================================================
+
+output block : to print output to the screen 
+
+output "variable_name"{
+	value = source expression
+	description = " ------ "
+}
+interpolation: ex : "my file name ${local_file.file.filename}"
+following commands to see the output 
+-----------------------------------
+terraform apply == end of excution plan it will show output information.
+terraform output
+terraform output variable_name
+=========================================================================================================================
+
+Variable blocks:
+
+variable blocks are written in variables.tf contains 3 arguments 
+type
+description
+default 
+above these arguments are optional 
+
+ex:-
+
+variable "filename" {
+	type = "string"
+	default = "pet.txt"
+	description = "Its a file ..."
+}
+
+variable "content" {
+	type = "string"
+	default = "Mrs Sharadha"
+	description = "Its a file ..."
+}
+
+
+If We don't initialize the variable value it will ask us to provide it in interactive mode.
+
+If we want to skip the interactive mode step we can create the file (file.tfvars or file.tfvars.json) to initialize the variable by using command -var-file
+ex: terraform plan -var-file file.tfvars
+ex: terraform plan -var "filename=pet.txt" -var "content=Mrs Sharadha"
+ to exclude step -var-file we can save the variables in the file with the extension (file.auto.tfvars or file.auto.tfvars.json)
+
+======================================================================
+Initialise variables in many ways:
+
+0. default value can be initialized in variables.tf
+
+1. environment variables(Update values(TF_VAR_variablename) in environment variable sysdm.cpl)
+2. interactive mode 
+3. file.tfvars or file.tfvars.json(-var-file file.tfvars)
+4. file.auto.tfvars or file.auto.tfvars.json
+5. -var "filename=pet.txt" -var "content=Mrs Sharadha"
+=====================================================================
+
+
+dependencies :
+implicit dependency : indirect references of resource by using interpolation expression.
+ex :
+resource "local_file" "file"{
+	filename = var.filename
+	content = "My pet name is ${random_pet.pet.id}"
+}
+
+resource "random_pet" "pet"{
+	prefix = var.prefix
+	separator = var.separator
+	length = var.length["first"]
+}
+
+
+explicit dependency : depends_on 
+ex: 
+resource "local_file" "file"{
+	filename = var.filename
+	content = "My pet name is naveen"
+	depends_on = [random_pet.pet]
+}
+
+resource "random_pet" "pet"{
+	prefix = var.prefix
+	separator = var.separator
+	length = var.length["first"]
+}
+
+====================================================================================================================
+
+Terraform Commands:
+======================
+
+terraform init : It will initialize the configuration directory and it will doanload the required plugins from registry.terraform.io
+terraform validate : we can do syntax check. 
+terraform refresh : Refresh the state file as per the current environment.
+terraform plan : It will refresh the state memory and create the execution plan by comparing with state file with configuration file.
+terraform output : It will print only output information mentioned in output block.
+Terraform show : show the current state of infrastructure from state file (tfstate formate).
+terraform fmt : It will scan your tf file and formate the information in it with readable .
+terraform graph : It will create the visualization graph for current environment with DOT file. 
+note: This command will work for linux if we install graphviz tool(terraform graph | dot -Tsvg > kumar.svg)
+terraform output --json : To get otput in json formate.
+terraform apply -refresh=false : To skip refresh state.
+terraform plan -refresh=false : To skip refresh state.
+terraform providers : Shows the providers information which already installed.
+terraform providers mirror C:\Users\Naveen\Desktop\Terraform\naveen : It will mirror the providers from one path to other path.
+=======================================================================================================================
+
+Immutability : Terraform works with Immutable provisioning because terraform doesn't support implace updates which causes configuration drift .
+
+Default behaviour : Terraform will 1st destroyed the resource and create the updated resource.
+To change the default behaviour of resource we use meta-arguments .
+ex lifecycle, depends_on
+
+To create the resource before destroy
+
+  lifecycle{
+	create_before_destroy = true
+  }
+  
+Don't destroy the resource by using lifecycle rules 
+
+  lifecycle{
+	prevent_destroy = true
+  }
+  
+Note: terraform destroy command still destroy the resource.
+
+
+Ignore the changes performed out of terraform.
+
+lifecycle{
+	ignore_changes = [
+		tag
+	]
+}
+============================================================================================================================
+
+Data source : It will help terraform to read resources which are created out of terraform.
+
+Syantax:
+
+data "local_file" "file"{
+	filename = "naveen.txt"
+}
+
+============================================================================================================================
+
+count: helps to create resource multiple times.
+
+ex:
+
+resource "local_file" "file" {
+  filename = var.file1[count.index]
+  content  = "Naveen"
+  count = length(var.file1)
+}
+
+output "out1"{
+	value = local_file.file
+	sensitive = true
+}
+
+length function can be used to get the length of variable.
+ex:
+length(var.file1)
+
+=============================================================================================================================
+
+Test: 
+
+resource "tls_private_key" "pvtkey" {
+    algorithm = "RSA"
+    rsa_bits = 4096
+}
+
+resource "local_file" "key_details" {
+   filename = "/root/key.txt"
+   content = tls_private_key.pvtkey.private_key_pem
+}
+
+Resource tls_private_key generates a secure private key and encodes it as PEM. It is a logical resource that lives only in the terraform state.
+
+https://registry.terraform.io/providers/hashicorp/tls/latest/docs/resources/private_key
+
+
+
+=============================================================================
+resource "local_file" "key_data" {
+        filename       = "/tmp/.pki/private_key.pem"
+        content = tls_private_key.private_key.private_key_pem
+        file_permission =  "0400"
+}
+resource "tls_private_key" "private_key" {
+  algorithm   = "RSA"
+  rsa_bits  = 2048
+}
+resource "tls_cert_request" "csr" {
+  private_key_pem = file("/tmp/.pki/private_key.pem")
+  depends_on = [ local_file.key_data ]
+
+  subject {
+    common_name  = "flexit.com"
+    organization = "FlexIT Consulting Services"
+  }
+}
+
+
+========================================================================
+
+25-03-2023
+
+for_each = will accept only set or map because output will saved in map results to effect the changes value in the variable instead eveything inside variable like cout.
+
+
+ex: 
+main.tf:
+==========
+resource "local_file" "file" {
+  filename = each.value
+  content  = "Naveen"
+  for_each = toset(var.listoffiles)
+}
+
+output "fileout" {
+  value     = local_file.file
+  sensitive = true
+}
+
+variables.tf:
+=============
+variable "listoffiles" {
+  type = list(any)
+  default = [
+    "kumar.txt",
+    "goud.txt"
+  ]
+}
+
+-------------------------------------------------------------------------------
+Meta Arguments:  attributes which changes the default behaviour of the resource.
+
+ex: count, for_each, lifecycle, depends_on
+
+==============================================================================
+DEBUGGING/LOGING : Defined in Environment variables.
+
+export TF_LOG=trace
+export TF_LOG=off
+
+Debugging options: INFO , ERROR , WARN, DEBUG , TRACE  
+
+export TF_LOG_PATH=./terraform.log
+it will save all logs into destination path.
+
+unset TF_LOG_PATH : TO stop recording into path.
+
+=============================================================================
+
+VERSION CONSTRAINTS : To download specific verison we use Version Constrants.written in terraform block or terraform.tf file.
+ex 1:
+terraform {
+	required_providers {
+		local = {
+			source = "hashicorp/local"
+			version = "2.2.3"
+		}
+	}
+}
+
+
+ex: 2
+terraform {
+  required_providers {
+    google = {
+      source  = "hashicorp/google"
+      version = "> 3.45.0, !=3.46.0, < 3.48.0"
+    }
+  }
+}
+
+resource "google_compute_instance" "special" {
+  name         = "aone"
+  machine_type = "e2-micro"
+  zone         = "us-west1-c"
+
+}
+
+
+
+ex: 3
+
+pasemestic constrant
+
+terraform {
+	required_providers {
+		local = {
+			source = "hashicorp/local"
+			version = "~> 2.0"
+		}
+	}
+}
+
+ex:
+terraform {
+  required_providers {
+    k8s = {
+      source  = "hashicorp/kubernetes"
+      version = "> 1.12.0, != 1.13.1, < 1.13.3 "
+    }
+
+    helm = {
+      source  = "hashicorp/helm"
+      version = "~> 1.2.0"
+    }
+  }
+}
+
+=======================================================================================
+
+AWS :
+
+IAM - Identity access management 
+
+2 types of accesses 
+1. Console access :  login into aws portal with user ID and Password to provision services.
+2. programatic access : Login into AWS CLI with access key ID and secret access key to provision services.
+
+
+User  : Gives access to individual user(EX : Mike).
+Group : Group is a set of users .(EX : Dev)
+policy : Type of permission given using AWS policies written in JSON (Customised policies and AWS managed policies).
+roles : Giving access between the services .
+        1. One AWS account user to another AWS user account services.
+		2. Application to an service.
+		3. AD to services.
+		
+access key : AKIAZGPNCBFJOZ4FWZKQ
+secret access key : 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
+
+aws configure 
+access key : AKIAZGPNCBFJOZ4FWZKQ
+secret access key : 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
+region :
+output type :
+
+.aws/config =>> region and output type
+.aws/credentials ==>  access key and secret access key
+
+AWS Commands:
+-------------
+
+aws --version : to check aws cli version.
+
+aws iam list-users : to list users 
+
+ex: aws --endpoint http://aws:4566 iam list-users
+
+aws iam create-user --user-name mary : to create a user mary 
+
+aws iam list-policies : to list policies
+
+aws iam attach-user-policy --user-name mary --policy-arn arn:aws:iam::aws:policy/AdministratorAccess --endpoint http://aws:4566  : attach policy to a user.
+
+aws iam create-group --group-name project-sapphire-developers --endpoint http://aws:4566    : create group 
+
+aws iam add-user-to-group --user-name jack --user-name jill --group-name project-sapphire-developers --endpoint http://aws:4566 : add user to group.
+
+Check Policies attached to the group by running: 
+
+aws --endpoint http://aws:4566 iam list-attached-group-policies --group-name project-sapphire-developers 
+
+and for individuals by running 
+
+aws --endpoint http://aws:4566 iam list-attached-user-policies --user-name jack
+
+aws iam attach-group-policy --group-name project-sapphire-developers --policy-arn arn:aws:iam::aws:policy/AmazonEC2FullAccess --endpoint http://aws:4566 
+
+Attach policy to group 
+
+=======================================================================================================================
+
+IAM using roles: 
+
+
+ex:
+resource "aws_iam_user" "kumar_user"{
+	name = "Kumar"
+	tags = {
+		name = "kumar"
+		Description = "Creating Kumar user"
+	}
+}
+
+
+provider "aws"{
+	region = "us-east-1"
+	access_key = "AKIAZGPNCBFJOZ4FWZKQ"
+	secret_key = "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"
+}
+
+Note: never expose the access_key and secret_key because it is not secure or never hardcord credentials instead we can use below aws command to configure credentials 
+or use AWS environment variables
+
+
+1. aws configure  : This helps to skip credentials inside provider block.
+
+ex : once done configure  will creates.aws folder with config and credentials file inside.
+$ aws configure
+AWS Access Key ID [None]: AKIAZGPNCBFJOZ4FWZKQ
+AWS Secret Access Key [None]: 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
+Default region name [None]:
+Default output format [None]:
+
+2. by using environment variables also we can skip credentials inside provider block.
+
+export AWS_ACCESS_KEY_ID=AKIAZGPNCBFJOZ4FWZKQ
+
+export AWS_SECRET_ACCESS_KEY_ID=7PqhRu9rkMqFZ3MUhp5+a+rxLTQhtgaxpAph+8u6
+
+ex: 
+resource "aws_iam_user" "kumar_user"{
+	name = "Kumar"
+	tags = {
+		name = "kumar"
+		Description = "Creating Kumar user"
+	}
+}
+
+
+provider "aws"{
+	region = "us-east-1"
+}
+-------------------------------------------------------------
+
+practical example: Create user 
+
+resource "aws_iam_user" "kumar_user"{
+	name = "Kumar"
+	tags = {
+		name = "kumar"
+		Description = "Creating Kumar user"
+	}
+}
+
+data "aws_iam_user" "naveen_user"{
+	user_name = "naveen"
+}
+
+provider "aws"{
+	region = "us-east-1"
+}
+
+output "user_arn"{
+	value = data.aws_iam_user.naveen_user.arn
+}
+
+--------------------------------------------------------------------------
+practical example: create user,group and policy using here doc syntax.
+
+provider "aws" {
+  region = "us-east-1"
+}
+
+resource "aws_iam_user" "kumar_user" {
+  name = "Kumar"
+  tags = {
+    name        = "kumar"
+    Description = "Creating Kumar user"
+  }
+}
+
+resource "aws_iam_group" "Developer_group" {
+  name = "Developer"
+}
+
+resource "aws_iam_user_group_membership" "Add_user_group" {
+  user   = aws_iam_user.kumar_user.name
+  groups = [aws_iam_group.Developer_group.name]
+}
+
+resource "aws_iam_policy" "developer_policy" {
+  name   = "developer_policy"
+  policy = <<EOF
+	 {
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Action": "*",
+            "Resource": "*"
+        }
+     ]
+	 }
+	EOF
+}
+==================================================================================================
+
+Final practical : IAM 
+
+# 1. Create user
+# 2. Create Group
+# 3. Add users to group
+# 4. Create policy
+# 5. Attched policy to the group
+# 6. generate access key ID and Secret access
+# 7. print access Key ID and Secret access
+
+provider "aws" {
+  region = "us-east-1"
+}
+
+resource "aws_iam_user" "kumar_user" {
+  name = "Kumar"
+  tags = {
+    name        = "kumar"
+    Description = "Creating Kumar user"
+  }
+}
+
+resource "aws_iam_group" "Developer_group" {
+  name = "Developer"
+}
+
+resource "aws_iam_user_group_membership" "Add_user_group" {
+  user   = aws_iam_user.kumar_user.name
+  groups = [aws_iam_group.Developer_group.name]
+}
+
+resource "aws_iam_policy" "developer_policy" {
+  name   = "developer_policy"
+  policy = file("policy.json")
+}
+
+resource "aws_iam_group_policy_attachment" "attach_policy_to_group"{
+  group = aws_iam_group.Developer_group.name
+  policy_arn = aws_iam_policy.developer_policy.arn
+}
+
+resource "aws_iam_access_key" "Credentials"{
+	user   = aws_iam_user.kumar_user.name
+}
+
+output "Key" {
+	value = "Key : ${aws_iam_access_key.Credentials.id}"
+	sensitive = true
+}
+
+output "Secret" {
+	value = "Secret : ${aws_iam_access_key.Credentials.secret}"
+	sensitive = true
+}
+
+=================================================================================================
+
+27-03-2023
+
+Create S3 using Terraform 
+S3 can store flat files it doesn't stores software related stuff like EBS or instance store.
+
+EBS:
+----
+stores data in blocks.
+Elastic block storage which store permanent data.
+It can only able to attach for one instance at a time.
+we can deattach and attach to other instance.
+
+Instance store:
+---------------
+It is an temporary storage.
+it can't detach and attach to other instance.
+this is avaiable for specific type instance.
+very fast compare to ebs.
+ex: temp files
+
+
+S3 :
+--
+This will store data in objects thats the reason we can store any kind of files.
+S3 can't attach to instance directly instead through internet or through end points we can access s3.
+s3 stores data in buckets.
+acces of bucket can be defined in bucket policies or ACL's.
+
+Bucket policies : Simple permissions can be defined in Bucket policies 
+ACL's : this is the recommended way of giving permissions to buckets. it can give deep dived policies.
+
+Like IAM s3 can be accessed all over the regions.
+-------------------
+Practical :
+ 
+Create S3 using terraform 
+
+provider "aws" {
+	region = "us-east-1"
+}
+
+resource "aws_s3_bucket" "us-east-1mybucket1997" {
+	bucket = "us-east-1mybucket1997"
+	acl = "private"
+	tags = {
+		name = "us-east-1mybucket1997"
+	}
+}
+
+resource "local_file" "file" {
+	filename = "test.txt"
+	content = "test"
+}
+
+resource "aws_s3_object" "upload_file" {
+	content = local_file.file.filename
+	key = "test.txt"
+	bucket = aws_s3_bucket.us-east-1mybucket1997.id
+}
+
+data "aws_iam_user" "Naveen"{
+	user_name = "Naveen"
+}
+
+
+resource "aws_s3_bucket_policy" "policy" {
+	bucket = aws_s3_bucket.us-east-1mybucket1997.id
+    policy = jsonencode(
+	{
+	"Version": "2012-10-17",
+	"Statement": [
+		{
+			"Principal": {
+				"AWS": [
+					"${data.aws_iam_user.Naveen.arn}"
+				]
+			},
+			"Effect": "Allow",
+			"Action": "*",
+			"Resource": "arn:aws:s3:::${aws_s3_bucket.us-east-1mybucket1997.id}/*"
+		}
+	]
+})
+}
+
+-------------------------------------------------------------------------------------------------------
+
+
+Dynamo DB using Terraform : 
+
+Dynamo DB : Is an No SQL database, It will save data in the form key value pair.
+
+in DynamoDB we have attributes and items.
+
+Attributes : heading (In below example we have 4 attibutes)
+
+Items : value of that heading (In below example we have 2 items)
+
+Hash_key : primary key (VIN)
+EX:
+
+    Manufaturer        Make           Year           VIN
+1.  Toyota            Corolla         2004        9867464789
+
+2.  Suzuki            Swift           2012        9393978999
+
+
+
+Practical :
+
+Create DYNAMODB with terraform .
+
+provider "aws" {
+  region = "us-east-1"
+}
+
+resource "aws_dynamodb_table" "Car" {
+  name         = "car"
+  hash_key     = "VIN"
+  billing_mode = "PAY_PER_REQUEST"
+  attribute {
+    name = "VIN"
+    type = "N"
+  }
+}
+
+
+resource "aws_dynamodb_table_item" "car_item" {
+  table_name = aws_dynamodb_table.Car.id
+  hash_key   = aws_dynamodb_table.Car.hash_key
+  item       = <<EOF
+  {
+	"Manufaturer" : {"s": "Toyota"},
+	"VIN" : {"N": "9867464789"},
+	"Make" : {"S": "Corolla"},
+	"Year" : {"N": "2004"}
+  }
+  EOF
+
+}
+
+---------------------------------------------------------------------------------
+
+state locking : Terraform locks the state when any changes are performing on configuration directory.
+no two persons can perform changes on infra structure.
+
+ex: 
+1. terraform apply 
+
+2. state locked 
+
+3. changes completed 
+
+4. state lock released
+
+
+disadvantages of storing state file in git repository :
+
+1. Not secure because state file have sensitive information like ip address etc.
+2. Git doesn't support state locking .
+3. team colabaration is not possible .
+4. performance will get reduced .
+
+Remote state backend :-
+==========================
+
+we can save statefile were the remote location supoort state locking .
+
+1. S3
+2. Azure storage.
+3. GCP storage.
+4. Terraform cloud.
+5. Hashicorp consul.
+
+
+how to create state backend using AWS resources.
+
+1. S3  :  To save state file.
+2. DynamoDB : To maintain state locking and data consistency.
+
+when performing any change to the infra parallely it will update the state file in s3.
+================================================================================================
+create state backend using terraform :
+
+resource "aws_s3_bucket" "s3" {
+  bucket = "state-lock1997"
+
+}
+
+resource "aws_dynamodb_table" "dynamodb" {
+  name           = "state-locking"
+  hash_key       = "LockID"
+  billing_mode   = "PROVISIONED"
+  read_capacity  = 5
+  write_capacity = 5
+  attribute {
+    name = "LockID"
+    type = "S"
+  }
+
+}
+
+
+provider "aws" {
+  region = "us-east-1"
+}
+
+=============================================================================================================
+
+Configure remote state backend as s3 in configuration file.
+
+resource "local_file" "file" {
+  filename = "file.txt"
+  content  = "Naveen"
+}
+
+terraform {
+  backend "s3" {
+    bucket         = "state-lock1997"
+    key            = "state/terraform.tfstate"
+    dynamodb_table = "state-locking"
+    region         = "us-east-1"
+  }
+}
+
+=========================================================================================================================
+import : it helps us to take the control of the services under terraform which is created out of terraform management.
+1. use import command to refresh state 
+
+2. update main.tf to take full control of services into terraform management.
+
+Syntax : Terraform import resource-address service-id
+
+
+ex: 
+
+$ terraform import aws_dynamodb_table.dynamodb state-locking
+
+$ terraform import aws_s3_bucket.s3 state-lock1997
+
+==============================================================================================================================
+State commands : 
+state can't be updated manually to update that use state commands.
+
+1. terraform state list     : Provides resource addresses present in state file.
+
+ex:
+$ terraform state list
+aws_dynamodb_table.dynamodb
+aws_s3_bucket.s3
+
+2. terraform state show resource-address          : provides the detail info of particular resource in the statefile.
+
+ex:
+$ terraform state show aws_dynamodb_table.dynamodb
+
+
+3. terraform state pull    :   Pull the state from remote location to view on console.
+
+4. terraform state mv source destination    : This command helps us to move resource from source to destination.
+
+terraform state mv local_file.file local_file.file1
+   
+5. terraform state rm resource-address    : It will remove resource from state.   
+$ terraform state rm local_file.file
+
+=================================================================================================================================
+
+
+Create ec2-Instance using terraform:
+--------------------------------------
+provider "aws" {
+	region = "us-east-1"
+}
+
+
+resource "aws_instance" "webserver" {
+	ami = "ami-00c39f71452c08778"
+	instance_type = "t2.micro"
+	tags = {
+		Name = "Webserver"
+		Description = "Webserver"
+	}
+	user_data = <<EOF
+		#!/bin/bash
+		sudo yum update -y
+		sudo yum install git python -y
+		EOF
+	key_name = aws_key_pair.key.id
+	vpc_security_group_ids = [ aws_security_group.web_sg.id ]
+}
+
+resource "aws_key_pair" "key" {
+	public_key = file("id_rsa.pub")
+
+}
+
+resource "aws_security_group" "web_sg" {
+	name = "web_sg"
+	ingress {
+		to_port = 22
+		from_port = 22
+		protocol = "tcp"
+		cidr_blocks = ["0.0.0.0/0"]
+	}
+}
+
+output "Public_IP" {
+	value = aws_instance.webserver.public_ip
+}
+
+
+===============================================================================================================================
+Provisioners : The piece of code we write in between provisioner block will run in remote or local system as per the type we give. 
+
+Provisioners will run after all resources created if provisioner failed that respect resource will mark as taint .
+
+we have creation type provisioners and deletion type provisioners.
+
+by default provisoners will behave as creation type provisioners to change the behavour we need to use (when = destroy ) for deletion type provisoner.
+
+by default resource marked as tainted and stops the execution abnormally to avoid this we can change the on_failure behaviour as continue.
+default :
+
+on_failure = fail ===>  on_failure = continue
+ex: below file fails due to permission so changed the default failure behaviour to continue to not interupting the resource creation.
+
+provisioner "remote-exec" {
+		on_failure = continue
+		inline = ["apt-get update -y","apt-get install nginx"]
+	}
+	connection {
+		host = self.public_ip
+		user = "ubuntu"
+		type = "ssh"
+		private_key = file("id_rsa")
+		
+	}
+
+we have 2 types of provisioners 
+
+1. remote-exec
+2. local-exec
+
+1. remote-exec : runs on remote system.
+ex:
+
+provisioner "remote-exec" {
+		inline = ["sudo apt-get update -y","sudo apt-get install nginx"]
+	}
+	connection {
+		host = self.public_ip
+		user = "ubuntu"
+		type = "ssh"
+		private_key = file("id_rsa")
+		
+	}
+
+2. local-exec : runs on local system 
+ex:
+
+provisioner "local-exec" {
+		when = destroy
+		command = "echo  Instance ${self.public_ip} destroyed ! > destroy.txt " 
+	}
+	provisioner "local-exec" {
+		command = "echo  Instance ${self.public_ip} created ! > create.txt " 
+	}
+
+NOTE: A destroy-time provisioner within a resource that is tainted will not run. 
+This includes resources that are marked tainted from a failed creation-time provisioner or tainted manually using terraform taint.
+
+Disadvantage of provisioner:
+
+we have to establish a connection to run the remote provisioner so best practice to use native commands for remote bootstraping.
+
+ex: 
+
+AWS : user_data
+azure : custom_data
+gcp : meta_data
+================================================================================================================================
+
+Taint  :  If you want to forcefully replace the resource we can taint it by using below command .
+
+ex : terraform taint resource-address
+
+untaint : if you want untaint the resource use below command.
+
+ex : terraform taint resource-address
+
+=================================================================================================================================
+
+
+Disadvantage from the concepts we learnt till now in terraform : 
+
+1. Duplication of code.
+2. code complexity. 
+3. risk 
+4. performance.
+5. reduce the reuasability.
+
+Modules: Modules will over come above disadvantages .
+
+Module is just a direcory which contains .tf files.
+
+By using Modules we can reuse the code instead of writting again.
+
+We can share the Modules for induviduals instead of copy past.
+
+terraform get : To download Modules from remote or local, It will download into .terraform folder again like plugins.
+
+there are 2 types of modules in terraform .
+
+1. local Modules. : which is saved in the local instance .
+
+Syntax to call local modules:
+-----------------------------
+
+module "Module_name" {
+	source = "address_of_module"
+	variable_name = "Value"
+}
+
+2. Remote Modules : Modules which saves in remote location (ex: registry.terraform.io) it can also have sub modules for specific functionality that we can use.
+
+Syntax to call remote modules:
+------------------------------
+module "Module_name" {
+	source = "address_of_module_in_remote" 
+ 	variable_name = "Value"
+	version = "version_value"
+}
+
+ex: 
+
+module "security-group" {
+  source  = "terraform-aws-modules/security-group/aws"
+  version = "4.17.1"
+  variable_name = "Value"
+}
+
+
+
+=================================================================================================================================
+
+Terraform Workspace : It is used to manage the environment.
+
+note: Workspace is totally dependent on map variable.
+
+ex: test, dev , prod.
+
+$ terraform workspace
+Usage: terraform [global options] workspace
+
+  new, list, show, select and delete Terraform workspaces.
+
+Subcommands:
+    delete    Delete a workspace
+    list      List Workspaces
+    new       Create a new workspace
+    select    Select a workspace
+    show      Show the name of the current workspace
+
+example saved in Workspace direcory in git ..
+
+=================================================================================================================================
+Terraform console : It is used to test variables and functions.
+
+Note: when we run "Terraform console" the coresponding terraform files will be loaded .
+
+functions: built in methods
+
+numeric :
+ex: max, min, ceil, floor
+
+ max(1,2,3,4) or max(var.variable_name...)
+
+
+string :
+ex: split, join, lower, upper, title, substr
+ 
+cmd:  split(",","abc,cde")
+result: tolist([
+		"abc",
+		"cde",
+		])
+
+collection:
+length, index, element, contains
+
+type casting:
+
+ex : toset , tolist, tomap
+
+few map commands:
+ex: 
+keys , values, lookup
+
+================================================================================================================================
+operations:
+
+terraform support below operations.
+
+arithmatic: +, -, *, /, % etc
+comparision: <= , >= 
+equality: == , != 
+logical: && , || , !
+
+=================================================================================================================================
+condional expression: 
+
+ex: length = 5 > var ? var : 5
+condition ? true : false
+
+
+=================================================================================================================================
+ROOT :
+
+Access key : AKIAZGPNCBFJK524Q2XL
+Secret Key : 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
+

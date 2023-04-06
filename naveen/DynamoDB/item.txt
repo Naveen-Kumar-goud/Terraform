@@ -1,0 +1,12 @@
+{
+	"Manufaturer" : {"s": "Toyota"},
+	"VIN" : {"N": "9867464789"},
+	"Make" : {"S": "Corolla"},
+	"Year" : {"N": "2004"}
+}
+{
+	"Manufaturer" : {"s": "Maruthi"},
+	"VIN" : {"N": "9393978999"},
+	"Make" : {"S": "Swift"},
+	"Year" : {"N": "2012"}
+}

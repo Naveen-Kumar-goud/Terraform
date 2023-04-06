@@ -1,0 +1,17 @@
+{
+	"Version": "2012-10-17",
+	"Statement": [
+		{
+			"Principal": {
+				"AWS": [
+					"${data.aws_iam_group.Administrator.arn}"
+				]
+			},
+			"Effect": "Allow",
+			"Action": "*",
+			"Resource": [
+				"arn:aws:s3:::${aws_s3_bucket.us-east-1mybucket1997.id}/*"
+			]
+		}
+	]
+}
